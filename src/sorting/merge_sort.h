@@ -60,9 +60,10 @@ void merge_sort_shared_buffer(float* const arr, const int low, const int high) {
     const int mid = (low + high) / 2;
     const int buf_len = std::max(high - mid, mid - low) + 2;
 
-    if (buf_len > 0) {
+    if (buf_len > 2) {
         float* const buffer = new float[buf_len];
         merge_sort(arr, low, high, buffer);
+        delete[] buffer;
     }
 }
 
