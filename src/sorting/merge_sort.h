@@ -1,14 +1,13 @@
+#include <algorithm>
 #include <cstring>
 #include <limits>
-#include <cmath>
 #include <iostream>
 
 
-void merge(float* const arr, const int low, const int mid, const int high) {
+void merge(float* const arr, const int low, const int mid, const int high, float* const buffer) {
     const int num_l = mid - low;
     const int num_r = high - mid;
     
-    float* const buffer = new float[num_l + num_r + 2];
     float* const l_arr = buffer;
     float* const r_arr = &buffer[num_l + 1];
 
@@ -29,7 +28,11 @@ void merge(float* const arr, const int low, const int mid, const int high) {
             ++j;
         }
     }
+}
 
+void merge(float* const arr, const int low, const int mid, const int high) {
+    float* const buffer = new float[high - low + 2];
+    merge(arr, low, mid, high, buffer);
     delete[] buffer;
 }
 
@@ -37,11 +40,29 @@ void merge_sort(float* const arr, const int low, const int high) {
     if (high - low > 1) {
         const int mid = (low + high) / 2;
 
-        // std::cout << "(" << low << ", " << mid << ", " << high << ")" << std::endl;
-
         merge_sort(arr, low, mid);
         merge_sort(arr, mid, high);
         merge(arr, low, mid, high);
+    }
+}
+
+void merge_sort(float* const arr, const int low, const int high, float* const buffer) {
+    if (high - low > 1) {
+        const int mid = (low + high) / 2;
+
+        merge_sort(arr, low, mid, buffer);
+        merge_sort(arr, mid, high, buffer);
+        merge(arr, low, mid, high, buffer);
+    }
+}
+
+void merge_sort_shared_buffer(float* const arr, const int low, const int high) {
+    const int mid = (low + high) / 2;
+    const int buf_len = std::max(high - mid, mid - low) + 2;
+
+    if (buf_len > 0) {
+        float* const buffer = new float[buf_len];
+        merge_sort(arr, low, high, buffer);
     }
 }
 
@@ -58,7 +79,7 @@ void test_merge() {
 
     constexpr int num_el = sizeof(arr) / sizeof(arr[0]);
 
-    merge_sort(arr, 0, num_el);
+    merge_sort_shared_buffer(arr, 0, num_el);
 
     for (int i = 0; i < num_el; ++i) {
         std::cout << i << ": " << arr[i] << std::endl;
