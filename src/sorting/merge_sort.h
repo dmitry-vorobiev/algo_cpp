@@ -66,6 +66,7 @@ void merge_sort_shared_buffer(T* const arr, const int low, const int high) {
     if (buf_len > 2) {
         T* const buffer = new T[buf_len];
         merge_sort(arr, low, high, buffer);
+        delete[] buffer;
     }
 }
 
