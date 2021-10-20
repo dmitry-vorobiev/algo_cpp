@@ -1,21 +1,20 @@
 #include <algorithm>
 #include <cstring>
 #include <limits>
-#include <iostream>
 
-
-void merge(float* const arr, const int low, const int mid, const int high, float* const buffer) {
+template <typename T>
+void merge(T* const arr, const int low, const int mid, const int high, T* const buffer) {
     const int num_l = mid - low;
     const int num_r = high - mid;
     
-    float* const l_arr = buffer;
-    float* const r_arr = &buffer[num_l + 1];
+    T* const l_arr = buffer;
+    T* const r_arr = &buffer[num_l + 1];
 
-    memcpy(l_arr, &arr[low], num_l * sizeof(float));
-    memcpy(r_arr, &arr[mid], num_r * sizeof(float));
+    memcpy(l_arr, &arr[low], num_l * sizeof(arr[0]));
+    memcpy(r_arr, &arr[mid], num_r * sizeof(arr[0]));
 
     // set last auxiliary elements to infinity.
-    const float inf = std::numeric_limits<float>::infinity();
+    const T inf = std::numeric_limits<T>::infinity();
     l_arr[num_l] = inf;
     r_arr[num_r] = inf;
 
@@ -30,13 +29,15 @@ void merge(float* const arr, const int low, const int mid, const int high, float
     }
 }
 
-void merge(float* const arr, const int low, const int mid, const int high) {
-    float* const buffer = new float[high - low + 2];
+template <typename T>
+void merge(T* const arr, const int low, const int mid, const int high) {
+    T* const buffer = new T[high - low + 2];
     merge(arr, low, mid, high, buffer);
     delete[] buffer;
 }
 
-void merge_sort(float* const arr, const int low, const int high) {
+template <typename T>
+void merge_sort(T* const arr, const int low, const int high) {
     if (high - low > 1) {
         const int mid = (low + high) / 2;
 
@@ -46,7 +47,8 @@ void merge_sort(float* const arr, const int low, const int high) {
     }
 }
 
-void merge_sort(float* const arr, const int low, const int high, float* const buffer) {
+template <typename T>
+void merge_sort(T* const arr, const int low, const int high, T* const buffer) {
     if (high - low > 1) {
         const int mid = (low + high) / 2;
 
@@ -56,32 +58,50 @@ void merge_sort(float* const arr, const int low, const int high, float* const bu
     }
 }
 
-void merge_sort_shared_buffer(float* const arr, const int low, const int high) {
+template <typename T>
+void merge_sort_shared_buffer(T* const arr, const int low, const int high) {
     const int mid = (low + high) / 2;
     const int buf_len = std::max(high - mid, mid - low) + 2;
 
-    if (buf_len > 0) {
-        float* const buffer = new float[buf_len];
+    if (buf_len > 2) {
+        T* const buffer = new T[buf_len];
         merge_sort(arr, low, high, buffer);
     }
 }
 
-void test_merge() {
+bool test_merge_sort() {
 
-    float arr[]{
-        0.0f, 0.5f, 1.5f, 2.0f, 2.5f, 
-        8.7f, 3.2f, 0.2f, 9.0f, 6.2f,
-        3.0f, 3.5f, 4.0f, 8.0f, 9.9f, 
-        7.1f, 3.9f, 5.2f, 1.8f, 8.6f,
-        0.1f, 0.7f, 1.1f, 1.7f, 2.3f, 
-        2.7f, 3.9f, 4.2f, 6.1f, 9.2f
+    double arr[]{
+        8.2, 3.5, 3.4, 2.0, 2.2, 1.4, 0.2, 0.9, 9.2, 6.3, 
+        7.2, 5.4, 5.5, 3.8, 2.6, 8.4, 9.2, 4.6, 5.1, 5.8, 
+        3.2, 2.6, 5.2, 6.2, 9.9, 2.7, 3.1, 0.1, 4.2, 7.4, 
+        3.8, 8.2, 9.3, 0.2, 8.7, 2.2, 7.9, 2.7, 8.1, 3.2, 
+        7.7, 7.9, 3.1, 9.6, 1.6, 4.3, 5.2, 3.9, 7.7, 6.4, 
+        5.8, 6.2, 4.6, 4.0, 0.2, 1.7, 8.5, 7.3, 7.0, 6.6, 
+        5.2, 3.2, 2.1, 0.9, 0.8, 9.8, 9.7, 0.6, 0.0, 5.3, 
+        4.1, 6.2, 7.7, 4.2, 4.3, 6.1, 8.6, 0.6, 3.2, 1.5
+    };
+
+    constexpr double ref_arr[]{
+        0.0, 0.1, 0.2, 0.2, 0.2, 0.6, 0.6, 0.8, 0.9, 0.9, 
+        1.4, 1.5, 1.6, 1.7, 2.0, 2.1, 2.2, 2.2, 2.6, 2.6, 
+        2.7, 2.7, 3.1, 3.1, 3.2, 3.2, 3.2, 3.2, 3.4, 3.5, 
+        3.8, 3.8, 3.9, 4.0, 4.1, 4.2, 4.2, 4.3, 4.3, 4.6, 
+        4.6, 5.1, 5.2, 5.2, 5.2, 5.3, 5.4, 5.5, 5.8, 5.8, 
+        6.1, 6.2, 6.2, 6.2, 6.3, 6.4, 6.6, 7.0, 7.2, 7.3, 
+        7.4, 7.7, 7.7, 7.7, 7.9, 7.9, 8.1, 8.2, 8.2, 8.4, 
+        8.5, 8.6, 8.7, 9.2, 9.2, 9.3, 9.6, 9.7, 9.8, 9.9
     };
 
     constexpr int num_el = sizeof(arr) / sizeof(arr[0]);
+    static_assert(sizeof(ref_arr) / sizeof(ref_arr[0]) == num_el);
 
     merge_sort_shared_buffer(arr, 0, num_el);
 
-    for (int i = 0; i < num_el; ++i) {
-        std::cout << i << ": " << arr[i] << std::endl;
+    for (int i = 0; i < num_el; ++i) 
+    {
+        if (arr[i] != ref_arr[i])
+            return false;
     }
+    return true;
 }
