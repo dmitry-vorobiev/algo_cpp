@@ -6,10 +6,14 @@
 
 #include "./exponentiation.h"
 
+#include "./data_structures/heap.h"
+
 
 int main(int argc, char** argv)
 {
 	test_pow();
+
+	test_heap();
 
 	std::cout 
 		<< "test_insertion_sort: " << test_insertion_sort() << std::endl 
