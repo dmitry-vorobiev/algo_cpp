@@ -9,7 +9,13 @@ private:
     std::vector<T> m_data;
 
 public:
-    MaxHeap() { };
+    MaxHeap() {}
+
+    MaxHeap(const std::vector<T>&& values)
+        :m_data(values)
+    {
+        _build_heap();
+    }
 
     std::size_t size() const noexcept 
     {
@@ -96,16 +102,19 @@ private:
 
 bool test_heap() {
 
-    MaxHeap<int> heap;
-
-    int test_values[]{
+    std::vector<int> initial_values{
         2, 3, 10, 1, -12, -5, 0, 24, 3, 9, 
         15, 25, 1, 20, 27, 18, 6, -1, 8, 11,
         31, 16, 14, 7, -2, -4, -8, -9, -13, 4
     };
+    MaxHeap<int> heap {std::move(initial_values)};
 
-    for (auto value : test_values)
-    {
+    int added_values[] {
+        28, -72, 31, 10, 12, -15, -9, 52, 42, -2,
+        29, -35, 45, 19, -8
+    };
+
+    for (int value : added_values) {
         heap.add(value);
     }
 
