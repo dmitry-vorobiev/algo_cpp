@@ -93,39 +93,51 @@ Node<T>* balance(Node<T>* p)
 }
 
 template <typename T>
-Node<T>* insert(Node<T>* p, T k)
+Node<T>* insert_new_node(Node<T>* p, T k)
 {
 	if (!p) 
         return new Node<T>(k);
 
 	if (k < p->key)
-		p->left = insert(p->left, k);
+		p->left = insert_new_node(p->left, k);
 	else
-		p->right = insert(p->right, k);
+		p->right = insert_new_node(p->right, k);
     
 	return balance(p);
 }
 
+template <typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
+class AVLTree
+{
+private:
+    Node<T>* m_root;
+    
+public:
+    AVLTree() { m_root = nullptr; };
+    ~AVLTree() {};
+
+    uint8_t height() { return m_root->height; }
+
+    void insert(T k) { m_root = insert_new_node<T>(m_root, k); }
+};
+
 bool test_avl_tree()
 {
-    Node<int>* tree = insert<int>(nullptr, 25);
-    tree = insert<int>(tree, 1);
-    tree = insert<int>(tree, 15);
-    tree = insert<int>(tree, 32);
-    tree = insert<int>(tree, 20);
-    tree = insert<int>(tree, 16);
-    tree = insert<int>(tree, 7);
-    tree = insert<int>(tree, 17);
-    tree = insert<int>(tree, 8);
-    tree = insert<int>(tree, 2);
-    tree = insert<int>(tree, 3);
-    tree = insert<int>(tree, 33);
-    tree = insert<int>(tree, 30);
-    tree = insert<int>(tree, 51);
-    tree = insert<int>(tree, 90);
-    tree = insert<int>(tree, 42);
-    tree = insert<int>(tree, 34);
+    int test_values[] {
+        2, 3, 10, 1, -12, -5, 0, 24, 13, 9, 
+        15, 25, 5, 20, 27, 18, 6, -1, 8, 11,
+        31, 16, 14, 7, -2, -4, -11, -9, -13, 4,
+        28, -72, 21, 17, 12, -15, 52, 42,
+        29, -35, 45, 19, -8, 22, 33, 50
+    };
 
-    std::cout << "Height: " << static_cast<int>(tree->height) << std::endl;
+    AVLTree<int> tree;
+
+    for (auto value : test_values)
+    {
+        tree.insert(value);
+    }
+
+    std::cout << "Height: " << static_cast<int>(tree.height()) << std::endl;
     return true;
 }
