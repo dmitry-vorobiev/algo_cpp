@@ -19,11 +19,16 @@ struct Node
 
     Node(K k) noexcept { key = k; left = right = nullptr; h = 1; }
 
-	static uint8_t height(Node<K>* p) {	return p ? p->h : 0; }
+	~Node() {
+		if (this->left) delete left;
+		if (this->right) delete right;
+	}
 
-	static int8_t bfactor(Node<K>* p) {	return height(p->right) - height(p->left); }
+	static uint8_t height(const Node<K>* const p) {	return p ? p->h : 0; }
 
-	static Node<K>* insert_new_node(Node<K>* p, K k)
+	static int8_t bfactor(const Node<K>* const p) {	return height(p->right) - height(p->left); }
+
+	static Node<K>* insert_new_node(Node<K>* p, const K k)
 	{
 		if (!p) return new Node<K>(k);
 
@@ -83,9 +88,7 @@ struct Node
 
 	void fix_height()
 	{
-		uint8_t h_l = height(this->left);
-		uint8_t h_r = height(this->right);
-		this->h = (h_l > h_r ? h_l : h_r) + 1;
+		this->h = std::max(height(this->left), height(this->right)) + 1;
 	}
 };
 
@@ -97,14 +100,14 @@ private:
 	uint32_t m_size;
     
 public:
-    Tree() { m_root = nullptr; m_size = 0; };
-    ~Tree() {};
+    Tree() noexcept { m_root = nullptr; m_size = 0; };
+    ~Tree() { delete m_root; };
 
     uint8_t height() const { return Node<K>::height(m_root); }
 
 	uint32_t size() const { return m_size; }
 
-    void insert(K k) { 
+    void insert(const K k) { 
 		m_root = Node<K>::insert_new_node(m_root, k);
 		m_size++;
 	}
@@ -122,19 +125,19 @@ bool test_avl_tree()
         29, -35, 45, 19, -8, 22, 33, 50
     };
 
-    avl_tree::Tree<int> tree;
+	avl_tree::Tree<int> tree;
 
-    for (auto value : test_values)
-    {
-        tree.insert(value);
+	for (auto value : test_values)
+	{
+		tree.insert(value);
 
 		float n = static_cast<float>(tree.size());
 		float h = static_cast<float>(tree.height());
 		assert(std::log2f(n + 1.f) <= h);
 		assert(h <= 1.44f * std::log2f(n + 2.f) - 0.328f);
-    }
+	}
 
 	std::cout << "Size: " << tree.size() << std::endl;
-    std::cout << "Height: " << static_cast<int>(tree.height()) << std::endl;
+	std::cout << "Height: " << static_cast<int>(tree.height()) << std::endl;
     return true;
 }
