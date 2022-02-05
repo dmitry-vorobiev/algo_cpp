@@ -16,9 +16,9 @@ struct Node
 	uint8_t h;
 	Node<K>* left;
 	Node<K>* right;
-
-    Node(K k) noexcept { key = k; left = right = nullptr; h = 1; }
-
+	
+	Node(K k) noexcept { key = k; left = right = nullptr; h = 1; }
+	
 	~Node() {
 		if (this->left) delete left;
 		if (this->right) delete right;
@@ -66,13 +66,13 @@ struct Node
 
 		auto bf_p = bfactor(p);
 		assert(-3 < bf_p && bf_p < 3);
-
+		
 		if (bf_p == 2)
 		{
 			if (bfactor(p->right) < 0)
 			{
 				p->right = rotate_right(p->right);
-			} 
+			}
 			return rotate_left(p);
 		}
 		if (bf_p == -2)
@@ -86,6 +86,28 @@ struct Node
 		return p;
 	}
 
+	const Node<K>* find_min() const
+	{
+		const Node<K>* min_el = this;
+
+		while (min_el->left)
+		{
+			min_el = min_el->left;
+		}
+		return min_el;
+	}
+
+	const Node<K>* find_max() const
+	{
+		const Node<K>* max_el = this;
+
+		while (max_el->right)
+		{
+			max_el = max_el->right;
+		}
+		return max_el;
+	}
+
 	void fix_height()
 	{
 		this->h = std::max(height(this->left), height(this->right)) + 1;
@@ -96,20 +118,31 @@ template <typename K, typename std::enable_if<std::is_arithmetic<K>::value>::typ
 class Tree
 {
 private:
-    Node<K>* m_root;
+	Node<K>* m_root;
 	uint32_t m_size;
     
 public:
-    Tree() noexcept { m_root = nullptr; m_size = 0; };
-    ~Tree() { delete m_root; };
-
-    uint8_t height() const { return Node<K>::height(m_root); }
-
+	Tree() noexcept { m_root = nullptr; m_size = 0; };
+	~Tree() { delete m_root; };
+	
+	uint8_t height() const { return Node<K>::height(m_root); }
+	
 	uint32_t size() const { return m_size; }
-
-    void insert(const K k) { 
+	
+	void insert(const K k) 
+	{
 		m_root = Node<K>::insert_new_node(m_root, k);
 		m_size++;
+	}
+
+	K min() const
+	{
+		return m_root ? m_root->find_min()->key : 0;
+	}
+
+	K max() const
+	{
+		return m_root ? m_root->find_max()->key : 0;
 	}
 };
 
@@ -139,5 +172,7 @@ bool test_avl_tree()
 
 	std::cout << "Size: " << tree.size() << std::endl;
 	std::cout << "Height: " << static_cast<int>(tree.height()) << std::endl;
+	std::cout << "Min: " << tree.min() << std::endl;
+	std::cout << "Max: " << tree.max() << std::endl;
     return true;
 }
