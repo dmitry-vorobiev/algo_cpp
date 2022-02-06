@@ -28,15 +28,42 @@ struct Node
 
 	static int8_t bfactor(const Node<K>* const p) {	return height(p->right) - height(p->left); }
 
-	static Node<K>* insert_new_node(Node<K>* p, const K k)
+	static Node<K>* insert(Node<K>* p, const K k)
 	{
 		if (!p) return new Node<K>(k);
 
 		if (k < p->key)
-			p->left = insert_new_node(p->left, k);
+			p->left = insert(p->left, k);
 		else
-			p->right = insert_new_node(p->right, k);
+			p->right = insert(p->right, k);
 		
+		return balance(p);
+	}
+
+	static Node<K>* remove(Node<K>* p, const K k)
+	{
+		if (!p) return nullptr;
+
+		if (k < p->key)
+			p->left = remove(p->left, k);
+		else if (k > p->key)
+			p->right = remove(p->right, k);
+		else  // key is found
+		{
+			Node<K>* q = p->left;
+			Node<K>* r = p->right;
+
+			p->left = nullptr;
+			p->right = nullptr;
+			delete p;
+
+			if (!r) return q;
+			Node<K>* m = r->find_min();
+			m->right = remove_min(r);
+			m->left = q;
+
+			return balance(m);
+		}
 		return balance(p);
 	}
 
@@ -86,7 +113,16 @@ struct Node
 		return p;
 	}
 
-	const Node<K>* find_min() const
+	static Node<K>* remove_min(Node<K>* p)
+	{
+		if (!p->left) 
+			return p->right;
+		
+		p->left = remove_min(p->left);
+		return balance(p);
+	}
+
+	Node<K>* find_min() const
 	{
 		const Node<K>* min_el = this;
 
@@ -94,10 +130,10 @@ struct Node
 		{
 			min_el = min_el->left;
 		}
-		return min_el;
+		return const_cast<Node<K>*>(min_el);
 	}
 
-	const Node<K>* find_max() const
+	Node<K>* find_max() const
 	{
 		const Node<K>* max_el = this;
 
@@ -105,7 +141,7 @@ struct Node
 		{
 			max_el = max_el->right;
 		}
-		return max_el;
+		return const_cast<Node<K>*>(max_el);
 	}
 
 	void fix_height()
@@ -131,8 +167,26 @@ public:
 	
 	void insert(const K k) 
 	{
-		m_root = Node<K>::insert_new_node(m_root, k);
+		m_root = Node<K>::insert(m_root, k);
 		m_size++;
+	}
+
+	void remove(const K k)
+	{
+		if (has_key(k)) m_size--;
+		m_root = Node<K>::remove(m_root, k);
+	}
+
+	bool has_key(const K k) const
+	{
+		const Node<K>* curr = this->m_root;
+
+		while (curr != nullptr)
+		{
+			if (curr->key == k)	return true;
+			curr = k < curr->key ? curr->left : curr->right;
+		}
+		return false;
 	}
 
 	K min() const
@@ -174,5 +228,15 @@ bool test_avl_tree()
 	std::cout << "Height: " << static_cast<int>(tree.height()) << std::endl;
 	std::cout << "Min: " << tree.min() << std::endl;
 	std::cout << "Max: " << tree.max() << std::endl;
+
+	for (auto &&value : test_values)
+	{
+		tree.remove(value);
+
+		float n = static_cast<float>(tree.size());
+		float h = static_cast<float>(tree.height());
+		assert(std::log2f(n + 1.f) <= h);
+		assert(h <= 1.44f * std::log2f(n + 2.f) - 0.328f);
+	}
     return true;
 }
