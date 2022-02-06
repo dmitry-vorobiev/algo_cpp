@@ -1,5 +1,5 @@
-/* 
- *https://habr.com/ru/post/150732/ 
+/*
+ *https://habr.com/ru/post/150732/
  */
 #include <cassert>
 #include <cmath>
@@ -16,39 +16,46 @@ struct Node
 	uint8_t h;
 	Node<K>* left;
 	Node<K>* right;
-	
-	Node(K k) noexcept { key = k; left = right = nullptr; h = 1; }
-	
-	~Node() {
-		if (this->left) delete left;
+
+	Node(K k) noexcept
+	{
+		key = k;
+		left = right = nullptr;
+		h = 1;
+	}
+
+	~Node()
+	{
+		if (this->left)	delete left;
 		if (this->right) delete right;
 	}
 
-	static uint8_t height(const Node<K>* const p) {	return p ? p->h : 0; }
+	static uint8_t height(const Node<K>* const p) { return p ? p->h : 0; }
 
-	static int8_t bfactor(const Node<K>* const p) {	return height(p->right) - height(p->left); }
+	static int8_t bfactor(const Node<K>* const p) { return height(p->right) - height(p->left); }
 
 	static Node<K>* insert(Node<K>* p, const K k)
 	{
-		if (!p) return new Node<K>(k);
+		if (!p)
+			return new Node<K>(k);
 
 		if (k < p->key)
 			p->left = insert(p->left, k);
 		else
 			p->right = insert(p->right, k);
-		
+
 		return balance(p);
 	}
 
 	static Node<K>* remove(Node<K>* p, const K k)
 	{
-		if (!p) return nullptr;
+		if (!p)	return nullptr;
 
 		if (k < p->key)
 			p->left = remove(p->left, k);
 		else if (k > p->key)
 			p->right = remove(p->right, k);
-		else  // key is found
+		else // key is found
 		{
 			Node<K>* q = p->left;
 			Node<K>* r = p->right;
@@ -93,7 +100,7 @@ struct Node
 
 		auto bf_p = bfactor(p);
 		assert(-3 < bf_p && bf_p < 3);
-		
+
 		if (bf_p == 2)
 		{
 			if (bfactor(p->right) < 0)
@@ -115,9 +122,9 @@ struct Node
 
 	static Node<K>* remove_min(Node<K>* p)
 	{
-		if (!p->left) 
+		if (!p->left)
 			return p->right;
-		
+
 		p->left = remove_min(p->left);
 		return balance(p);
 	}
@@ -156,16 +163,20 @@ class Tree
 private:
 	Node<K>* m_root;
 	uint32_t m_size;
-    
+
 public:
-	Tree() noexcept { m_root = nullptr; m_size = 0; };
+	Tree() noexcept
+	{
+		m_root = nullptr;
+		m_size = 0;
+	};
 	~Tree() { delete m_root; };
-	
+
 	uint8_t height() const { return Node<K>::height(m_root); }
-	
+
 	uint32_t size() const { return m_size; }
-	
-	void insert(const K k) 
+
+	void insert(const K k)
 	{
 		m_root = Node<K>::insert(m_root, k);
 		m_size++;
@@ -173,7 +184,8 @@ public:
 
 	void remove(const K k)
 	{
-		if (has_key(k)) m_size--;
+		if (has_key(k))
+			m_size--;
 		m_root = Node<K>::remove(m_root, k);
 	}
 
@@ -183,7 +195,8 @@ public:
 
 		while (curr != nullptr)
 		{
-			if (curr->key == k)	return true;
+			if (curr->key == k)
+				return true;
 			curr = k < curr->key ? curr->left : curr->right;
 		}
 		return false;
@@ -204,13 +217,12 @@ public:
 
 bool test_avl_tree()
 {
-    int test_values[] {
-        2, 3, 10, 1, -12, -5, 0, 24, 13, 9, 
-        15, 25, 5, 20, 27, 18, 6, -1, 8, 11,
-        31, 16, 14, 7, -2, -4, -11, -9, -13, 4,
-        28, -72, 21, 17, 12, -15, 52, 42,
-        29, -35, 45, 19, -8, 22, 33, 50
-    };
+	int test_values[]{
+		2, 3, 10, 1, -12, -5, 0, 24, 13, 9,
+		15, 25, 5, 20, 27, 18, 6, -1, 8, 11,
+		31, 16, 14, 7, -2, -4, -11, -9, -13, 4,
+		28, -72, 21, 17, 12, -15, 52, 42,
+		29, -35, 45, 19, -8, 22, 33, 50};
 
 	avl_tree::Tree<int> tree;
 
@@ -238,5 +250,5 @@ bool test_avl_tree()
 		assert(std::log2f(n + 1.f) <= h);
 		assert(h <= 1.44f * std::log2f(n + 2.f) - 0.328f);
 	}
-    return true;
+	return true;
 }
