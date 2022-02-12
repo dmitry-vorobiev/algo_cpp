@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <type_traits>
 #include <iostream>
+#include <vector>
 
 namespace avl_tree {
 
@@ -204,6 +205,32 @@ public:
 		return false;
 	}
 
+	std::vector<K> traverse_ascend() const
+	{
+		std::vector<K> result;
+		result.reserve(m_size);
+
+		std::vector<const Node<K>*> stack;
+		const Node<K>* curr = this->m_root;
+
+		while (curr != nullptr || stack.size() > 0)
+		{
+			if (curr == nullptr)
+			{
+				curr = stack.back();
+				stack.pop_back();
+				result.push_back(curr->key);
+				curr = curr->right;
+			}
+			else
+			{
+				stack.push_back(curr);
+				curr = curr->left;
+			}
+		}
+		return result;
+	}
+
 	K min() const
 	{
 		return m_root ? m_root->find_min()->key : 0;
@@ -248,6 +275,15 @@ bool test_avl_tree()
 	for (auto &&v : missing_keys)
 	{
 		assert(!tree.has_key(v));
+	}
+
+	std::vector<int> sorted = tree.traverse_ascend();
+	int prev_key = -9000;
+
+	for (auto &&v : sorted)
+	{
+		assert(v >= prev_key);
+		prev_key = v;
 	}
 	
 	std::cout << "Size: " << tree.size() << std::endl;
