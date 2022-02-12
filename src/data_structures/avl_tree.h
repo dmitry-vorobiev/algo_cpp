@@ -65,7 +65,7 @@ struct Node
 			delete p;
 
 			if (!r) return q;
-			Node<K>* m = r->find_min();
+			Node<K>* m = const_cast<Node<K>*>(r->find_min());
 			m->right = remove_min(r);
 			m->left = q;
 
@@ -129,7 +129,7 @@ struct Node
 		return balance(p);
 	}
 
-	Node<K>* find_min() const
+	const Node<K>* find_min() const
 	{
 		const Node<K>* min_el = this;
 
@@ -137,10 +137,10 @@ struct Node
 		{
 			min_el = min_el->left;
 		}
-		return const_cast<Node<K>*>(min_el);
+		return min_el;
 	}
 
-	Node<K>* find_max() const
+	const Node<K>* find_max() const
 	{
 		const Node<K>* max_el = this;
 
@@ -148,7 +148,7 @@ struct Node
 		{
 			max_el = max_el->right;
 		}
-		return const_cast<Node<K>*>(max_el);
+		return max_el;
 	}
 
 	void fix_height()
@@ -185,8 +185,10 @@ public:
 	void remove(const K k)
 	{
 		if (has_key(k))
+		{
+			m_root = Node<K>::remove(m_root, k);
 			m_size--;
-		m_root = Node<K>::remove(m_root, k);
+		}
 	}
 
 	bool has_key(const K k) const
@@ -226,9 +228,9 @@ bool test_avl_tree()
 
 	avl_tree::Tree<int> tree;
 
-	for (auto value : test_values)
+	for (auto &&v : test_values)
 	{
-		tree.insert(value);
+		tree.insert(v);
 
 		float n = static_cast<float>(tree.size());
 		float h = static_cast<float>(tree.height());
@@ -236,6 +238,18 @@ bool test_avl_tree()
 		assert(h <= 1.44f * std::log2f(n + 2.f) - 0.328f);
 	}
 
+	for (auto &&v : test_values)
+	{
+		assert(tree.has_key(v));
+	}
+
+	int missing_keys[]{ -100, 90, 51, 23, -38 };
+
+	for (auto &&v : missing_keys)
+	{
+		assert(!tree.has_key(v));
+	}
+	
 	std::cout << "Size: " << tree.size() << std::endl;
 	std::cout << "Height: " << static_cast<int>(tree.height()) << std::endl;
 	std::cout << "Min: " << tree.min() << std::endl;
